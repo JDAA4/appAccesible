@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Alto contraste */
+.contrast {
+  background-color: black !important;
+  color: yellow !important;
+}
+
+body {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Escalado dinámico con JS usando font-size custom property */
+html {
+  font-size: calc(16px * var(--font-size-scale, 1));
+}
+
+.enhanced-link {
+  background-color: yellow;
+  color: black;
+  text-decoration: underline;
+  padding: 2px 4px;
+  border: 2px solid black;
+  border-radius: 4px;
+  cursor: pointer;
+}
