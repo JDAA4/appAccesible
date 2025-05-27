@@ -47,10 +47,21 @@
   --font-weight-bold: 700;
 }
 
-/* Alto contraste */
 .contrast {
   background-color: black !important;
   color: yellow !important;
+}
+
+.contrast * {
+  background-color: black !important;
+  color: yellow !important;
+  border-color: yellow !important;
+}
+
+.contrast a, .contrast button {
+  background-color: yellow !important;
+  color: black !important;
+  border: 2px solid yellow !important;
 }
 
 body {
@@ -98,6 +109,18 @@ html {
 
 .dark .btn-accesibilidad:hover {
   background-color: var(--color-yellow-600);
+}
+
+.dark {
+  color: var(--color-gray-100);
+}
+
+.dark .text-gray-600 { 
+  color: var(--color-gray-300); 
+}
+
+.dark .text-gray-700 { 
+  color: var(--color-gray-200); 
 }
 
 /* Utilidades básicas */

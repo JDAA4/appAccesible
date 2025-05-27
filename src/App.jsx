@@ -18,13 +18,22 @@ const App = () => {
   const [highContrast, setHighContrast] = useState(false);
   const [hideImages, setHideImages] = useState(false);
   const [removeLinks, setRemoveLinks] = useState(false);
-  const [cursor, setCursor] = useState("default");
 
   useEffect(() => {
-    document.documentElement.style.setProperty("--tw-text-opacity", highContrast ? "1" : "");
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+
+     if (highContrast) {
+      document.body.classList.add('contrast');
+    } else {
+      document.body.classList.remove('contrast');
+    }
     document.documentElement.style.setProperty("--font-size-scale", fontSize);
     document.body.style.fontFamily = fontFamily;
-    document.body.style.cursor = cursor;
 
     const links = document.querySelectorAll('a');
     links.forEach(link => {
@@ -34,10 +43,10 @@ const App = () => {
         link.classList.remove('enhanced-link');
       }
     });
-  }, [fontSize, fontFamily, cursor, highContrast, removeLinks]);
+  }, [fontSize, fontFamily, highContrast, removeLinks, darkMode]);
 
   return (
-    <div className={`${darkMode ? "dark" : ""} ${highContrast ? "contrast" : ""} min-h-screen`}>
+    <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <Router>
         <Header
           removeLinks={removeLinks}
@@ -62,14 +71,12 @@ const App = () => {
                   setFontFamily={setFontFamily}
                   setDarkMode={setDarkMode}
                   setHighContrast={setHighContrast}
-                  setCursor={setCursor}
                   setHideImages={setHideImages}
                   setRemoveLinks={setRemoveLinks}
                   darkMode={darkMode}
                   highContrast={highContrast}
                   fontSize={fontSize}
                   fontFamily={fontFamily}
-                  cursor={cursor}
                   hideImages={hideImages}
                   removeLinks={removeLinks}
                 />
@@ -223,14 +230,12 @@ const Accesibilidad = ({
   setFontFamily,
   setDarkMode,
   setHighContrast,
-  setCursor,
   setHideImages,
   setRemoveLinks,
   darkMode,
   highContrast,
   fontSize,
   fontFamily,
-  cursor,
   hideImages,
   removeLinks,
 }) => {
@@ -276,18 +281,6 @@ const Accesibilidad = ({
           aria-pressed={highContrast}
         >
           Alto Contraste
-        </button>
-        <button
-          onClick={() => setCursor("default")}
-          className={`btn-accesibilidad ${cursor === "default" ? "ring-2 ring-blue-400" : ""}`}
-        >
-          Cursor Normal
-        </button>
-        <button
-          onClick={() => setCursor("pointer")}
-          className={`btn-accesibilidad ${cursor === "pointer" ? "ring-2 ring-blue-400" : ""}`}
-        >
-          Cursor Grande
         </button>
         <button
           onClick={() => setHideImages((v) => !v)}
