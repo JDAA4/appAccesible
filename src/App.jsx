@@ -172,7 +172,7 @@ const Tema = ({ hideImages }) => (
         <img
           src="/minion.jpeg"
           alt="Edificio eficiente"
-          className="my-4 w-64 h-40 object-cover rounded shadow-lg"
+          className="my-4 w-120 h-100 object-cover rounded shadow-lg"
         />
       )}
       <span className="sr-only">Imagen de un edificio eficiente</span>
@@ -239,6 +239,28 @@ const Accesibilidad = ({
   hideImages,
   removeLinks,
 }) => {
+  const increaseFontSize = () => {
+    setFontSize(prev => Math.min(prev + 0.2, 1.6)); 
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(prev => Math.max(prev - 0.1, 0.7)); 
+  };
+
+  const resetFontSize = () => {
+    setFontSize(1);
+  };
+
+  const getFontLevel = () => {
+    if (fontSize > 1) {
+      // Para incrementos (0.2 cada nivel)
+      return Math.round((fontSize - 1) / 0.2);
+    } else {
+      // Para decrementos (0.1 cada nivel)
+      return Math.round((fontSize - 1) / 0.1);
+    }
+  };
+
   return (
     <section aria-labelledby="accesibilidad">
       <h2 id="accesibilidad" className="text-2xl font-bold mb-4 text-blue-700 dark:text-yellow-200">Opciones de Accesibilidad</h2>
@@ -246,10 +268,32 @@ const Accesibilidad = ({
         <div>
           <span className="block font-semibold mb-1">Tamaño de fuente:</span>
           <div className="flex gap-2">
-            <button onClick={() => setFontSize(1)} className={`btn-accesibilidad ${fontSize === 1 ? "ring-2 ring-blue-400" : ""}`}>Normal</button>
-            <button onClick={() => setFontSize(1.5)} className={`btn-accesibilidad ${fontSize === 1.5 ? "ring-2 ring-blue-400" : ""}`}>A+</button>
-            <button onClick={() => setFontSize(2)} className={`btn-accesibilidad ${fontSize === 2 ? "ring-2 ring-blue-400" : ""}`}>A++</button>
-            <button onClick={() => setFontSize(3)} className={`btn-accesibilidad ${fontSize === 3 ? "ring-2 ring-blue-400" : ""}`}>A+++</button>
+            <button 
+              onClick={decreaseFontSize} 
+              className="btn-accesibilidad"
+              disabled={fontSize <= 0.7}
+              aria-label="Disminuir tamaño de fuente"
+            >
+              A-
+            </button>
+            <button 
+              onClick={resetFontSize} 
+              className={`btn-accesibilidad ${fontSize === 1 ? "ring-2 ring-blue-400" : ""}`}
+              aria-label="Tamaño normal de fuente"
+            >
+              Normal
+            </button>
+            <button 
+              onClick={increaseFontSize} 
+              className="btn-accesibilidad"
+              disabled={fontSize >= 1.6}
+              aria-label="Aumentar tamaño de fuente"
+            >
+              A+
+            </button>
+          </div>
+          <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+            Nivel: {getFontLevel()}
           </div>
         </div>
         <div>
@@ -263,7 +307,6 @@ const Accesibilidad = ({
             <option value="sans-serif">Sans-serif</option>
             <option value="serif">Serif</option>
             <option value="monospace">Monospace</option>
-            <option value="'OpenDyslexic', sans-serif">OpenDyslexic</option>
           </select>
         </div>
       </div>
@@ -273,7 +316,7 @@ const Accesibilidad = ({
           className={`btn-accesibilidad flex items-center gap-1 ${darkMode ? "ring-2 ring-yellow-400" : ""}`}
           aria-pressed={darkMode}
         >
-          <Moon className="inline" />/<Sun className="inline" /> Modo Oscuro
+          <Moon className="inline" />/<Sun className="inline" /> 
         </button>
         <button
           onClick={() => setHighContrast((c) => !c)}
@@ -284,17 +327,25 @@ const Accesibilidad = ({
         </button>
         <button
           onClick={() => setHideImages((v) => !v)}
-          className={`btn-accesibilidad flex items-center gap-1 ${hideImages ? "ring-2 ring-blue-400" : ""}`}
+          className={`btn-accesibilidad flex items-center gap-1 ${
+            hideImages 
+              ? "bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 ring-2 ring-red-400" 
+              : ""
+          }`}
           aria-pressed={hideImages}
         >
-          <ImageOff className="inline" /> Mostrar/Quitar imágenes
+          <ImageOff className="inline" /> {hideImages ? "Mostrar imágenes" : "Quitar imágenes"}
         </button>
         <button
           onClick={() => setRemoveLinks((v) => !v)}
-          className={`btn-accesibilidad flex items-center gap-1 ${removeLinks ? "ring-2 ring-blue-400" : ""}`}
+          className={`btn-accesibilidad flex items-center gap-1 ${
+            removeLinks 
+              ? "bg-orange-600 hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 ring-2 ring-orange-400" 
+              : ""
+          }`}
           aria-pressed={removeLinks}
         >
-          <MousePointer2 className="inline" /> Quitar/Sobresaltar Links
+          <MousePointer2 className="inline" /> {removeLinks ? "Restaurar links" : "Sobresaltar links"}
         </button>
       </div>
       <div className="mt-4 text-sm text-gray-600 dark:text-gray-300">
