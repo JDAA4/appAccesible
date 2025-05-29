@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, useLocation } from "react-router-dom";
 import { Sun, Moon, ImageOff, MousePointer2 } from "lucide-react";
 import emailjs from '@emailjs/browser';
@@ -21,7 +21,7 @@ const App = () => {
   const [highlightLinks, setHighlightLinks] = useState(false);
 
   // Función para aplicar estilos a los enlaces
-  const applyLinkStyles = () => {
+  const applyLinkStyles = useCallback(() => {
     setTimeout(() => {
       const links = document.querySelectorAll('a');
       links.forEach(link => {
@@ -32,7 +32,7 @@ const App = () => {
         }
       });
     }, 100); // Pequeño delay para asegurar que el DOM se ha actualizado
-  };
+  }, [highlightLinks]);
 
   useEffect(() => {
     if (darkMode) {
@@ -51,7 +51,7 @@ const App = () => {
     document.body.style.fontFamily = fontFamily;
 
     applyLinkStyles();
-  }, [fontSize, fontFamily, highContrast, highlightLinks, darkMode]);
+  }, [fontSize, fontFamily, highContrast, highlightLinks, darkMode, applyLinkStyles]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors">
@@ -97,7 +97,7 @@ const AppContent = ({
   // Aplicar estilos cuando cambie la ruta
   useEffect(() => {
     applyLinkStyles();
-  }, [location.pathname, highlightLinks]);
+  }, [location.pathname, applyLinkStyles]);
 
   return (
     <>
@@ -142,7 +142,7 @@ const AppContent = ({
   );
 };
 
-function Header({ highlightLinks, darkMode, highContrast }) {
+function Header({  darkMode, highContrast }) {
   const location = useLocation();
   return (
     <header
@@ -230,7 +230,7 @@ const CV = () => (
     <ul className="list-disc pl-8 text-base space-y-1">
       <li>Estudiante de Ingeniería en Software</li>
       <li>Especialización en desarrollo web y móvil</li>
-      <li>Proyectos con tecnologías IoT y visualización de datos</li>
+      <li>Universidad de Colima</li>
       <li><a href="https://github.com/JDAA4">Mi Github</a></li>
     </ul>
   </section>
@@ -263,40 +263,56 @@ const Contacto = () => {
     timeOnFields: {}
   });
 
-  const generateCaptcha = () => {
-    const operations = [
-      { q: '¿Cuántos días tiene una semana?', a: 7 },
-      { q: '¿Cuántos meses tiene un año?', a: 12 },
-      { q: '¿Cuántas horas tiene un día?', a: 24 },
-      { q: '¿Cuántos minutos tiene una hora?', a: 60 },
-      { q: '¿Cuánto es 2 + 2?', a: 4 },
-      { q: '¿Cuánto es 5 + 3?', a: 8 },
-      { q: '¿Cuánto es 10 - 3?', a: 7 },
-      { q: '¿Cuántos ojos tiene una persona?', a: 2 },
-      { q: '¿Cuántas patas tiene un gato?', a: 4 },
-      { q: '¿Cuántas letras tiene la palabra "casa"?', a: 4 },
-      { q: '¿Cuánto es 3 + 5?', a: 8 },
-      { q: '¿Cuánto es 9 - 4?', a: 5 },
-      { q: '¿Cuántas ruedas tiene un coche?', a: 4 },
-      { q: '¿Cuántos dedos tiene una mano?', a: 5 }
-    ];
-    
-    const randomQuestion = operations[Math.floor(Math.random() * operations.length)];
-    setCaptchaQuestion(randomQuestion);
-    
-    // Limpiar la respuesta anterior cuando se genera nueva pregunta
-    setFormData(prev => ({ ...prev, captcha: '' }));
-    
-    // Limpiar error de captcha si existe
-    if (errors.captcha) {
-      setErrors(prev => ({ ...prev, captcha: null }));
-    }
-  };
+  // ...existing code...
 
-  // Inicializar EmailJS
-  useEffect(() => {
-    emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
-  }, []);
+// ...existing code...
+
+const generateCaptcha = () => {
+  const operations = [
+    { question: '¿Cuántos días tiene una semana?', answer: 7 },
+    { question: '¿Cuántos meses tiene un año?', answer: 12 },
+    { question: '¿Cuántas horas tiene un día?', answer: 24 },
+    { question: '¿Cuántos minutos tiene una hora?', answer: 60 },
+    { question: '¿Cuánto es 2 + 2?', answer: 4 },
+    { question: '¿Cuánto es 5 + 3?', answer: 8 },
+    { question: '¿Cuánto es 10 - 3?', answer: 7 },
+    { question: '¿Cuántos ojos tiene una persona?', answer: 2 },
+    { question: '¿Cuántas patas tiene un gato?', answer: 4 },
+    { question: '¿Cuántas letras tiene la palabra "casa"?', answer: 4 },
+    { question: '¿Cuánto es 3 + 5?', answer: 8 },
+    { question: '¿Cuánto es 9 - 4?', answer: 5 },
+    { question: '¿Cuántas ruedas tiene un coche?', answer: 4 },
+    { question: '¿Cuántos dedos tiene una mano?', answer: 5 }
+  ];
+  
+  const randomQuestion = operations[Math.floor(Math.random() * operations.length)];
+  setCaptchaQuestion(randomQuestion);
+  
+  // Limpiar la respuesta anterior cuando se genera nueva pregunta
+  setFormData(prev => ({ ...prev, captcha: '' }));
+  
+  // Limpiar error de captcha si existe
+  setErrors(prev => {
+    if (prev.captcha) {
+      // Usar el patrón de rest operator con underscore para indicar variable no usada
+      const { captcha: _captcha, ...rest } = prev;
+      return rest;
+    }
+    return prev;
+  });
+};
+
+// Inicializar EmailJS
+useEffect(() => {
+  const isProduction = import.meta.env.PROD;
+const appUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+  
+  // Log para debug (solo en desarrollo)
+  if (!isProduction) {
+    console.log('EmailJS initialized for:', appUrl);
+  }
+}, []);
 
   // Inicializar protecciones al cargar el componente
   useEffect(() => {
@@ -317,6 +333,12 @@ const Contacto = () => {
       const lastSubmit = parseInt(savedLastSubmit);
       if (!isNaN(lastSubmit)) {
         setLastSubmitTime(lastSubmit);
+        // Si han pasado más de 10 minutos desde el último intento fallido, resetear contador
+        const currentTime = Date.now();
+        if (currentTime - lastSubmit > 60000) { // 10 minutos
+          setSubmitAttempts(0);
+          localStorage.removeItem('contactFormAttempts');
+        }
       }
     }
 
@@ -493,7 +515,7 @@ const Contacto = () => {
     const timeSinceLastSubmit = currentTime - lastSubmitTime;
     
     // No permitir más de 3 intentos en 10 minutos
-    if (submitAttempts >= 3 && timeSinceLastSubmit < 600000) {
+    if (submitAttempts >= 3 && timeSinceLastSubmit < 60000) {
       return 'Demasiados intentos. Por favor, espera 10 minutos antes de intentar de nuevo.';
     }
     
@@ -557,17 +579,17 @@ const Contacto = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
     
     // Limpiar error del campo cuando el usuario empiece a escribir
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors(prev => ({
+        ...prev,
         [name]: null
-      });
+      }));
     }
   };
 
@@ -629,82 +651,85 @@ const Contacto = () => {
       .trim();
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    setSubmitStatus({ 
+      type: 'error', 
+      message: 'Por favor, corrige los errores en el formulario antes de enviarlo.' 
+    });
+    return;
+  }
+  
+  setIsSubmitting(true);
+  setSubmitStatus(null);
+
+  try {
+    // Sanitizar datos antes del envío
+    const sanitizedData = {
+      nombre: sanitizeInput(formData.nombre),
+      correo: sanitizeInput(formData.correo),
+      mensaje: sanitizeInput(formData.mensaje)
+    };
+
+    const templateParams = {
+      to_name: 'José Aguilar',
+      from_name: sanitizedData.nombre,
+      from_email: sanitizedData.correo,
+      message: sanitizedData.mensaje,
+      reply_to: sanitizedData.correo,
+      timestamp: new Date().toLocaleString('es-MX'),
+      security_info: `Tiempo en formulario: ${Math.round((Date.now() - startTime) / 1000)}s, Interacciones: ${interactions.keystrokes} teclas, ${interactions.mouseMoves} movimientos de ratón`
+    };
+
+    await emailjs.send(
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+      templateParams
+    );
+
+    // ✅ ÉXITO: Solo actualizar el tiempo del último envío, NO incrementar intentos fallidos
+    const currentTime = Date.now();
+    setLastSubmitTime(currentTime);
+    localStorage.setItem('lastSubmitTime', currentTime.toString());
+
+    // Resetear contador de intentos fallidos en caso de éxito
+    setSubmitAttempts(0);
+    localStorage.removeItem('contactFormAttempts'); // Limpiar intentos fallidos
+
+    setSubmitStatus({ 
+      type: 'success', 
+      message: '¡Mensaje enviado correctamente! Te responderemos pronto.' 
+    });
     
-    if (!validateForm()) {
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Por favor, corrige los errores en el formulario antes de enviarlo.' 
-      });
-      return;
-    }
+    // Resetear formulario y generar nuevo captcha
+    setFormData({ nombre: '', correo: '', mensaje: '', honeypot: '', captcha: '' });
+    setErrors({});
+    generateCaptcha();
+    setStartTime(Date.now());
+    setInteractions({ keystrokes: 0, mouseMoves: 0, fieldFocuses: 0, timeOnFields: {} });
     
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-
-    try {
-      // Sanitizar datos antes del envío
-      const sanitizedData = {
-        nombre: sanitizeInput(formData.nombre),
-        correo: sanitizeInput(formData.correo),
-        mensaje: sanitizeInput(formData.mensaje)
-      };
-
-      const templateParams = {
-        to_name: 'José Aguilar',
-        from_name: sanitizedData.nombre,
-        from_email: sanitizedData.correo,
-        message: sanitizedData.mensaje,
-        reply_to: sanitizedData.correo,
-        timestamp: new Date().toLocaleString('es-MX'),
-        security_info: `Tiempo en formulario: ${Math.round((Date.now() - startTime) / 1000)}s, Interacciones: ${interactions.keystrokes} teclas, ${interactions.mouseMoves} movimientos de ratón`
-      };
-
-      await emailjs.send(
-        import.meta.env.VITE_EMAILJS_SERVICE_ID,
-        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
-        templateParams
-      );
-
-      // Actualizar estadísticas de envío
-      const currentTime = Date.now();
-      const newAttempts = submitAttempts + 1;
-      
-      setSubmitAttempts(newAttempts);
-      setLastSubmitTime(currentTime);
-      
-      localStorage.setItem('contactFormAttempts', newAttempts.toString());
-      localStorage.setItem('lastSubmitTime', currentTime.toString());
-
-      setSubmitStatus({ 
-        type: 'success', 
-        message: '¡Mensaje enviado correctamente! Te responderemos pronto.' 
-      });
-      
-      // Resetear formulario y generar nuevo captcha
-      setFormData({ nombre: '', correo: '', mensaje: '', honeypot: '', captcha: '' });
-      setErrors({});
-      generateCaptcha();
-      setStartTime(Date.now());
-      setInteractions({ keystrokes: 0, mouseMoves: 0, fieldFocuses: 0, timeOnFields: {} });
-      
-    } catch (error) {
-      console.error('Error al enviar el email:', error);
-      
-      // Incrementar intentos fallidos
-      const newAttempts = submitAttempts + 1;
-      setSubmitAttempts(newAttempts);
-      localStorage.setItem('contactFormAttempts', newAttempts.toString());
-      
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Error al enviar el mensaje. Por favor, intenta de nuevo más tarde.' 
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  } catch (error) {
+    console.error('Error al enviar el email:', error);
+    
+    // ❌ ERROR: Solo aquí incrementar intentos fallidos
+    const currentTime = Date.now();
+    const newAttempts = submitAttempts + 1;
+    
+    setSubmitAttempts(newAttempts);
+    setLastSubmitTime(currentTime);
+    localStorage.setItem('contactFormAttempts', newAttempts.toString());
+    localStorage.setItem('lastSubmitTime', currentTime.toString());
+    
+    setSubmitStatus({ 
+      type: 'error', 
+      message: 'Error al enviar el mensaje. Por favor, intenta de nuevo más tarde.' 
+    });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   const isFormValid = () => {
     return formData.nombre.trim() && 
@@ -730,7 +755,7 @@ const Contacto = () => {
       {submitAttempts >= 2 && (
         <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded-lg text-yellow-800 text-sm">
           <strong>Advertencia:</strong> Has realizado {submitAttempts} intentos de envío. 
-          {submitAttempts >= 3 && ' Límite alcanzado. Espera 10 minutos antes del próximo intento.'}
+          {submitAttempts >= 3 && ' Límite alcanzado. Espera 1 minuto antes del próximo intento.'}
         </div>
       )}
       
